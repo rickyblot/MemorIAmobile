@@ -35,10 +35,11 @@ function AppleIcon({ className = 'w-5 h-5' }) {
 
 /**
  * Shared Google / Apple OAuth buttons for login & signup.
- * Pass `providers` from AuthContext (`oauthProviders`) to hide unconfigured buttons.
+ * Both providers are always shown in the UI; AuthContext handles
+ * unconfigured Apple/Google with a clear error message.
  */
 export default function SocialAuthButtons({
-  providers = null,
+  providers: _providers = null,
   onGoogle,
   onApple,
   loadingProvider = null,
@@ -47,12 +48,6 @@ export default function SocialAuthButtons({
   appleLabel = 'Continuar con Apple',
 }) {
   const busy = Boolean(loadingProvider) || disabled;
-  const showGoogle = !providers || providers.includes('google');
-  const showApple = !providers || providers.includes('apple');
-
-  if (!showGoogle && !showApple) {
-    return null;
-  }
 
   return (
     <div className="space-y-3">
@@ -67,42 +62,38 @@ export default function SocialAuthButtons({
         </div>
       </div>
 
-      {showGoogle && (
-        <Button
-          type="button"
-          variant="outline"
-          disabled={busy}
-          onClick={onGoogle}
-          className="w-full h-12 rounded-xl bg-white text-foreground border-border hover:bg-muted/60 font-semibold shadow-sm"
-        >
-          <span className="inline-flex items-center justify-center gap-2">
-            {loadingProvider === 'google' ? (
-              <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
-            ) : (
-              <GoogleIcon />
-            )}
-            <span>{googleLabel}</span>
-          </span>
-        </Button>
-      )}
+      <Button
+        type="button"
+        variant="outline"
+        disabled={busy}
+        onClick={onGoogle}
+        className="w-full h-12 rounded-xl bg-white text-foreground border-border hover:bg-muted/60 font-semibold shadow-sm"
+      >
+        <span className="inline-flex items-center justify-center gap-2">
+          {loadingProvider === 'google' ? (
+            <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+          ) : (
+            <GoogleIcon />
+          )}
+          <span>{googleLabel}</span>
+        </span>
+      </Button>
 
-      {showApple && (
-        <Button
-          type="button"
-          disabled={busy}
-          onClick={onApple}
-          className="w-full h-12 rounded-xl bg-black text-white hover:bg-black/90 font-semibold shadow-sm"
-        >
-          <span className="inline-flex items-center justify-center gap-2">
-            {loadingProvider === 'apple' ? (
-              <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
-            ) : (
-              <AppleIcon />
-            )}
-            <span>{appleLabel}</span>
-          </span>
-        </Button>
-      )}
+      <Button
+        type="button"
+        disabled={busy}
+        onClick={onApple}
+        className="w-full h-12 rounded-xl bg-black text-white hover:bg-black/90 font-semibold shadow-sm"
+      >
+        <span className="inline-flex items-center justify-center gap-2">
+          {loadingProvider === 'apple' ? (
+            <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+          ) : (
+            <AppleIcon />
+          )}
+          <span>{appleLabel}</span>
+        </span>
+      </Button>
     </div>
   );
 }
