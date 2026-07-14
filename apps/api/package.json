@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "node --trace-deprecation --env-file=.env src/main.js",
-    "start": "node --env-file=.env src/main.js",
+    "start": "node src/main.js",
     "migrate": "node --env-file=.env src/db/migrate.js",
     "lint": "eslint . --quiet"
   },

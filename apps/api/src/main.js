@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import { existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -14,6 +15,9 @@ import { runMigrations } from './db/migrate.js';
 import { UPLOADS_DIR } from './utils/uploads.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const WEB_DIST = join(__dirname, '../../../dist/apps/web');
+const serveSpa = existsSync(join(WEB_DIST, 'index.html'));
+
 const app = express();
 
 app.set('trust proxy', true);
@@ -40,9 +44,12 @@ process.on('SIGTERM', async () => {
 
 app.use(helmet({
 	crossOriginResourcePolicy: { policy: 'cross-origin' },
+	contentSecurityPolicy: false,
 }));
 app.use(cors({
-	origin: process.env.CORS_ORIGIN,
+	origin: process.env.CORS_ORIGIN === '*' || !process.env.CORS_ORIGIN
+		? true
+		: process.env.CORS_ORIGIN,
 	credentials: true,
 }));
 app.use(morgan('combined'));
@@ -56,19 +63,39 @@ app.use(express.urlencoded({
 }));
 
 app.use('/uploads', express.static(UPLOADS_DIR));
+app.use('/hcgi/api/uploads', express.static(UPLOADS_DIR));
+// Production / Hostinger: browser calls /hcgi/api/* (no Vite proxy)
+app.use('/hcgi/api', routes());
+// Local Vite proxy rewrites /hcgi/api → / on this server
 app.use('/', routes());
 
 app.use(errorMiddleware);
+
+if (serveSpa) {
+	app.use(express.static(WEB_DIST, { index: false }));
+	app.use((req, res, next) => {
+		if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+		if (req.path.startsWith('/hcgi/api') || req.path.startsWith('/uploads')) {
+			return next();
+		}
+		res.sendFile(join(WEB_DIST, 'index.html'), (err) => {
+			if (err) next(err);
+		});
+	});
+	logger.info(`Serving web app from ${WEB_DIST}`);
+} else {
+	logger.warn(`Web build not found at ${WEB_DIST} — run npm run build (API-only mode)`);
+}
 
 app.use((req, res) => {
 	res.status(404).json({ error: 'Route not found' });
 });
 
-const port = process.env.PORT || 3001;
+const port = Number(process.env.PORT) || 3001;
 
 async function start() {
 	if (!process.env.JWT_SECRET) {
-		logger.error('JWT_SECRET is required in apps/api/.env');
+		logger.error('JWT_SECRET is required (set in Hostinger env vars or apps/api/.env)');
 		process.exit(1);
 	}
 
@@ -80,9 +107,10 @@ async function start() {
 		process.exit(1);
 	}
 
-	app.listen(port, () => {
-		logger.info(`API Server running on http://localhost:${port}`);
+	app.listen(port, '0.0.0.0', () => {
+		logger.info(`Server listening on 0.0.0.0:${port}`);
 		logger.info(`Uploads: ${UPLOADS_DIR}`);
+		logger.info(`SPA: ${serveSpa ? 'yes' : 'no'}`);
 	});
 }
 

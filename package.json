@@ -1,15 +1,23 @@
 {
-  "name": "monorepo",
+  "name": "memoriamobile",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "engines": {
+    "node": "20.x"
+  },
+  "main": "apps/api/src/main.js",
   "scripts": {
     "dev": "concurrently --kill-others --raw \"npm run dev --prefix apps/web\" \"npm run dev --prefix apps/api\"",
-    "build": "concurrently --raw \"npm run build --prefix apps/web\"",
-    "start": "concurrently --kill-others --raw \"npm run start --prefix apps/api\"",
+    "build": "npm run build --prefix apps/web",
+    "start": "npm run start --prefix apps/api",
     "migrate": "npm run migrate --prefix apps/api",
     "lint": "concurrently --raw \"npm run lint --prefix apps/web\" \"npm run lint --prefix apps/api\"",
     "horizons:diff": "node scripts/horizons-sync-diff.mjs",
     "package:hostinger": "node scripts/package-hostinger-zip.mjs"
+  },
+  "dependencies": {
+    "express": "^5.0.1"
   },
   "devDependencies": {
     "concurrently": "^10.0.3"

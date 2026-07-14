@@ -2,6 +2,36 @@
 
 MemorIAmobile now uses **MySQL + Express** for auth and data. PocketBase is no longer required.
 
+## Node.js GitHub deploy (Build Settings)
+
+Use **Website → Node.js** (not PHP/static Git). Suggested commands:
+
+| Setting | Value |
+|--------|--------|
+| Install | `npm install` |
+| Build | `npm run build` |
+| Start | `npm start` |
+
+After build, Express serves the SPA from `dist/apps/web` and the API at `/hcgi/api`.
+
+Set these **environment variables** in the Hostinger Node panel (required or the app exits and you may see **403**):
+
+```env
+PORT=<Hostinger usually sets this>
+NODE_ENV=production
+JWT_SECRET=<long-random-string>
+MYSQL_HOST=...
+MYSQL_PORT=3306
+MYSQL_USER=...
+MYSQL_PASSWORD=...
+MYSQL_DATABASE=...
+CORS_ORIGIN=*
+WEB_APP_URL=https://your-hostingersite.com
+API_PUBLIC_URL=https://your-hostingersite.com/hcgi/api
+```
+
+Optional: `GOOGLE_*` / `APPLE_*` for OAuth. Do **not** rely on `apps/api/.env` on Hostinger — use the panel.
+
 ## 1. Create the database in hPanel
 
 1. Open the site in Hostinger → **Bases de datos** → **Administración** (or Databases → Management).
