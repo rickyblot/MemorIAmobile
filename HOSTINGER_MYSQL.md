@@ -4,13 +4,21 @@ MemorIAmobile now uses **MySQL + Express** for auth and data. PocketBase is no l
 
 ## Node.js GitHub deploy (Build Settings)
 
-Use **Website → Node.js** (not PHP/static Git). Suggested commands:
+Hostinger does **not** accept npm workspaces monorepos as-is. This repo is set up for detection as **Express** via root `server.js` + `express` in root `package.json`.
+
+Use **Add Website → Node.js Web App → Import Git Repository** (do not convert an existing PHP/static site via “backup”).
+
+Suggested commands:
 
 | Setting | Value |
 |--------|--------|
+| Framework | Express (or Other) |
 | Install | `npm install` |
 | Build | `npm run build` |
 | Start | `npm start` |
+| Entry file | `server.js` |
+| Output directory | `dist/apps/web` |
+| Node.js | `20.x` |
 
 After build, Express serves the SPA from `dist/apps/web` and the API at `/hcgi/api`.
 
