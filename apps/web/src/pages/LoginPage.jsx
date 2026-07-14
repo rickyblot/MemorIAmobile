@@ -156,9 +156,7 @@ export default function LoginPage() {
               loadingProvider={oauthLoading}
               disabled={loading}
               googleLabel="Continuar con Google"
-              appleLabel="Continuar con Apple"
               onGoogle={() => handleOAuth('google')}
-              onApple={() => handleOAuth('apple')}
             />
           </div>
         </div>
