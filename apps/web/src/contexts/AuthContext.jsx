@@ -6,6 +6,7 @@ import {
   setAuthSession,
   clearAuthSession,
   getStoredUser,
+  getStoredToken,
   API_SERVER_URL,
 } from '@/lib/apiServerClient';
 
@@ -40,11 +41,18 @@ export const AuthProvider = ({ children }) => {
 
     (async () => {
       try {
-        if (authStore.isValid) {
+        // Drop inconsistent storage (user without token) so ProtectedRoute cannot open.
+        if (getStoredUser() && !getStoredToken()) {
+          clearAuthSession();
+          setCurrentUser(null);
+        } else if (authStore.isValid) {
           const data = await apiFetch('/auth/me');
           // Keep the same storage preference (local vs session) from login.
           setAuthSession(authStore.token, data.user);
           setCurrentUser(data.user);
+        } else {
+          clearAuthSession();
+          setCurrentUser(null);
         }
       } catch {
         clearAuthSession();
@@ -158,7 +166,7 @@ export const AuthProvider = ({ children }) => {
     toast.success('Sesión cerrada exitosamente');
   };
 
-  const isAuthenticated = Boolean(currentUser);
+  const isAuthenticated = Boolean(currentUser && getStoredToken());
 
   const value = {
     currentUser,
