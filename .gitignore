@@ -1,0 +1,72 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+dist/
+**/dist/
+build/
+.next/
+out/
+
+# Environment / secrets (keep *.example)
+.env
+.env.*
+!.env.example
+!**/.env.example
+apps/**/.env
+apps/**/.env.local
+apps/**/.env.*.local
+
+# Logs & debug
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local uploads (keep placeholder)
+apps/api/uploads/*
+!apps/api/uploads/.gitkeep
+
+# PocketBase (deprecated locally — large binary + DB)
+apps/pocketbase/pb_data/
+apps/pocketbase/pb_data.bak-*/
+apps/pocketbase/pocketbase
+apps/pocketbase/pocketbase.exe
+apps/pocketbase/*.exe
+apps/pocketbase/*.zip
+apps/pocketbase/_pb_win_tmp/
+
+# Large archives / deploy packages (do not push)
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+temp_upload.zip
+memoriamobile-hostinger.zip
+app.tar.gz
+
+# Horizons / Hostinger baselines (huge)
+.horizons-baseline/
+deploy/
+
+# Coverage / test / cache
+coverage/
+.nyc_output/
+.cache/
+.turbo/
+*.tsbuildinfo
+
+# Optional local tooling
+.cursor/
+.agents/

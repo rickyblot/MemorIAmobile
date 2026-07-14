@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://memoriamobile.com/sitemap.xml
