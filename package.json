@@ -9,7 +9,7 @@
   "main": "server.js",
   "scripts": {
     "dev": "concurrently --kill-others --raw \"npm run dev --prefix apps/web\" \"npm run dev --prefix apps/api\"",
-    "prebuild": "npm install --prefix apps/api && npm install --prefix apps/web",
+    "prebuild": "npm install --prefix apps/api --include=dev && npm install --prefix apps/web --include=dev",
     "build": "npm run build --prefix apps/web",
     "start": "node server.js",
     "migrate": "npm run migrate --prefix apps/api",
@@ -31,6 +31,6 @@
     "uuid": "^14.0.1"
   },
   "devDependencies": {
-    "concurrently": "^10.0.3"
+    "concurrently": "^9.2.1"
   }
 }
