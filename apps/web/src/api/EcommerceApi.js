@@ -1,16 +1,69 @@
-const ECOMMERCE_API_URL = (
-  import.meta.env.VITE_ECOMMERCE_API_URL || 'https://api-ecommerce.hostinger.com'
+const DEFAULT_ECOMMERCE_API_URL = 'https://api-ecommerce.hostinger.com';
+
+const VITE_ECOMMERCE_API_URL = (
+  import.meta.env.VITE_ECOMMERCE_API_URL || ''
 ).replace(/\/$/, '');
 
-const ECOMMERCE_STORE_ID = (import.meta.env.VITE_ECOMMERCE_STORE_ID || '').trim();
+const VITE_ECOMMERCE_STORE_ID = (import.meta.env.VITE_ECOMMERCE_STORE_ID || '').trim();
 
-function requireStoreId() {
-  if (!ECOMMERCE_STORE_ID) {
-    throw new Error(
-      'Missing VITE_ECOMMERCE_STORE_ID in apps/web/.env (restart npm run dev after setting it).',
-    );
+/** @type {{ storeId: string, apiUrl: string } | null} */
+let runtimeEcommerceConfig = null;
+/** @type {Promise<{ storeId: string, apiUrl: string }> | null} */
+let runtimeEcommerceConfigPromise = null;
+
+/**
+ * Resolve store ID + API URL.
+ * Prefers Vite build-time env (local). Falls back to GET /hcgi/api/ecommerce/config
+ * so Hostinger can set ECOMMERCE_STORE_ID at runtime without rebuilding the SPA with VITE_*.
+ */
+async function getEcommerceConfig() {
+  if (VITE_ECOMMERCE_STORE_ID) {
+    return {
+      storeId: VITE_ECOMMERCE_STORE_ID,
+      apiUrl: VITE_ECOMMERCE_API_URL || DEFAULT_ECOMMERCE_API_URL,
+    };
   }
-  return ECOMMERCE_STORE_ID;
+
+  if (runtimeEcommerceConfig) return runtimeEcommerceConfig;
+
+  if (!runtimeEcommerceConfigPromise) {
+    runtimeEcommerceConfigPromise = fetch('/hcgi/api/ecommerce/config')
+      .then(async (res) => {
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(
+            body.error
+              || 'Ecommerce store is not configured on the server (set ECOMMERCE_STORE_ID).',
+          );
+        }
+        const data = await res.json();
+        const storeId = String(data.storeId || '').trim();
+        if (!storeId) {
+          throw new Error('Ecommerce config response missing storeId.');
+        }
+        runtimeEcommerceConfig = {
+          storeId,
+          apiUrl: String(data.apiUrl || DEFAULT_ECOMMERCE_API_URL).replace(/\/$/, ''),
+        };
+        return runtimeEcommerceConfig;
+      })
+      .catch((err) => {
+        runtimeEcommerceConfigPromise = null;
+        throw err;
+      });
+  }
+
+  return runtimeEcommerceConfigPromise;
+}
+
+async function requireStoreId() {
+  const { storeId } = await getEcommerceConfig();
+  return storeId;
+}
+
+async function getEcommerceApiUrl() {
+  const { apiUrl } = await getEcommerceConfig();
+  return apiUrl;
 }
 
 export const formatCurrency = (priceInCents, currencyInfo) => {
@@ -422,8 +475,9 @@ export async function getProducts({
   }
 
   const queryString = queryParams.toString();
-  const storeId = requireStoreId();
-  const url = `${ECOMMERCE_API_URL}/store/${storeId}/products${queryString ? `?${queryString}` : ""}`;
+  const storeId = await requireStoreId();
+  const ecommerceApiUrl = await getEcommerceApiUrl();
+  const url = `${ecommerceApiUrl}/store/${storeId}/products${queryString ? `?${queryString}` : ""}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -434,7 +488,7 @@ export async function getProducts({
 
   if (!response.ok) {
     throw new Error(
-      `Hostinger Ecommerce HTTP ${response.status} (store ${storeId}). Check VITE_ECOMMERCE_STORE_ID and subscription products.`,
+      `Hostinger Ecommerce HTTP ${response.status} (store ${storeId}). Check ECOMMERCE_STORE_ID / subscription products.`,
     );
   }
 
@@ -502,7 +556,9 @@ export async function getProduct(id, { field } = {}) {
   }
 
   const queryString = queryParams.toString();
-  const url = `${ECOMMERCE_API_URL}/store/${requireStoreId()}/products/${id}${queryString ? `?${queryString}` : ""}`;
+  const storeId = await requireStoreId();
+  const ecommerceApiUrl = await getEcommerceApiUrl();
+  const url = `${ecommerceApiUrl}/store/${storeId}/products/${id}${queryString ? `?${queryString}` : ""}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -580,7 +636,9 @@ export async function getProductQuantities({ fields, product_ids }) {
     queryParams.append("product_ids[]", id);
   });
 
-  const url = `${ECOMMERCE_API_URL}/store/${requireStoreId()}/variants?${queryParams.toString()}`;
+  const storeId = await requireStoreId();
+  const ecommerceApiUrl = await getEcommerceApiUrl();
+  const url = `${ecommerceApiUrl}/store/${storeId}/variants?${queryParams.toString()}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -619,7 +677,9 @@ export async function getProductQuantities({ fields, product_ids }) {
  * // Use categories to filter products by checking product.collections[].collection_id
  */
 export async function getCategories() {
-  const url = `${ECOMMERCE_API_URL}/store/${requireStoreId()}/collections`;
+  const storeId = await requireStoreId();
+  const ecommerceApiUrl = await getEcommerceApiUrl();
+  const url = `${ecommerceApiUrl}/store/${storeId}/collections`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -650,8 +710,10 @@ export async function getCategories() {
 }
 
 async function getCheckoutLanguage() {
+  const storeId = await requireStoreId();
+  const ecommerceApiUrl = await getEcommerceApiUrl();
   const response = await fetch(
-    `${ECOMMERCE_API_URL}/store/${requireStoreId()}/settings`,
+    `${ecommerceApiUrl}/store/${storeId}/settings`,
     {
       method: "GET",
       headers: {
@@ -718,7 +780,9 @@ export async function initializeCheckout({
   locale,
   customer,
 }) {
-  const url = `${ECOMMERCE_API_URL}/store/${requireStoreId()}/checkout`;
+  const storeId = await requireStoreId();
+  const ecommerceApiUrl = await getEcommerceApiUrl();
+  const url = `${ecommerceApiUrl}/store/${storeId}/checkout`;
 
   const checkoutInitPromise = fetch(url, {
     method: "POST",
