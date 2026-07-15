@@ -69,6 +69,9 @@ export default function DashboardPage() {
               Tus recuerdos están cifrados y seguros.
             </p>
           </div>
+          <Button asChild variant="outline" className="font-semibold">
+            <Link to="/profile">Ajustes de perfil</Link>
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

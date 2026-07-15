@@ -2,10 +2,7 @@ import process from 'node:process';
 import { PassThrough, Readable } from 'node:stream';
 import { NodeEnv } from '../constants/common.js';
 import logger from '../utils/logger.js';
-import { writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { createId } from '../utils/ids.js';
-import { UPLOADS_DIR, filePublicUrl } from '../utils/uploads.js';
+import { filePublicUrl, persistMulterFiles } from '../utils/uploads.js';
 import { createRecord, getFullList } from '../services/records.js';
 
 const MessageRole = Object.freeze({
@@ -150,21 +147,20 @@ const SquashableSSEEventTypes = new Set([
  */
 
 /**
- * Uploads images to local disk + MySQL and returns their public URLs.
+ * Uploads images to S3 (or local disk) + MySQL and returns their public URLs.
  *
  * @param {{ images: Express.Multer.File[] }} params
  * @returns {Promise<string[]>}
  */
 export async function uploadImagesToPocketBase({ images }) {
-	const uploadPromises = images.map(async (file) => {
-		const ext = (file.originalname || '').includes('.')
-			? `.${file.originalname.split('.').pop()}`
-			: '.bin';
-		const filename = `${createId(20)}${ext}`;
-		await writeFile(join(UPLOADS_DIR, filename), file.buffer);
-		await createRecord('_integratedAiImages', { file: filename });
+	await persistMulterFiles(images);
 
-		const path = filePublicUrl(filename);
+	const uploadPromises = images.map(async (file) => {
+		await createRecord('_integratedAiImages', { file: file.filename });
+
+		const path = filePublicUrl(file.filename);
+		if (path?.startsWith('http')) return path;
+
 		const domain = process.env.WEBSITE_DOMAIN;
 		const publicBase = process.env.API_PUBLIC_URL
 			|| (domain ? `https://${domain}/hcgi/api` : '');

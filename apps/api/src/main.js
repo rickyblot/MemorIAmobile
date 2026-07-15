@@ -13,6 +13,8 @@ import logger from './utils/logger.js';
 import { BodyLimit } from './constants/common.js';
 import { runMigrations } from './db/migrate.js';
 import { UPLOADS_DIR } from './utils/uploads.js';
+import uploadsRouter from './routes/uploads.js';
+import { isS3Enabled, s3Bucket } from './services/s3.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const WEB_DIST = join(__dirname, '../../../dist/apps/web');
@@ -62,8 +64,8 @@ app.use(express.urlencoded({
 	limit: BodyLimit,
 }));
 
-app.use('/uploads', express.static(UPLOADS_DIR));
-app.use('/hcgi/api/uploads', express.static(UPLOADS_DIR));
+app.use('/uploads', uploadsRouter());
+app.use('/hcgi/api/uploads', uploadsRouter());
 // Production / Hostinger: browser calls /hcgi/api/* (no Vite proxy)
 app.use('/hcgi/api', routes());
 // Local Vite proxy rewrites /hcgi/api → / on this server
@@ -109,7 +111,11 @@ async function start() {
 
 	app.listen(port, '0.0.0.0', () => {
 		logger.info(`Server listening on 0.0.0.0:${port}`);
-		logger.info(`Uploads: ${UPLOADS_DIR}`);
+		if (isS3Enabled()) {
+			logger.info(`Uploads: Amazon S3 bucket ${s3Bucket()}`);
+		} else {
+			logger.info(`Uploads: local disk ${UPLOADS_DIR} (set S3_* to use Amazon S3)`);
+		}
 		logger.info(`SPA: ${serveSpa ? 'yes' : 'no'}`);
 	});
 }

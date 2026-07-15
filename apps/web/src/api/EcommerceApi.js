@@ -1,5 +1,17 @@
-const ECOMMERCE_API_URL = "https://api-ecommerce.hostinger.com";
-const ECOMMERCE_STORE_ID = "store_01KW53JNMJA0X6NRM8MNDM91M4";
+const ECOMMERCE_API_URL = (
+  import.meta.env.VITE_ECOMMERCE_API_URL || 'https://api-ecommerce.hostinger.com'
+).replace(/\/$/, '');
+
+const ECOMMERCE_STORE_ID = (import.meta.env.VITE_ECOMMERCE_STORE_ID || '').trim();
+
+function requireStoreId() {
+  if (!ECOMMERCE_STORE_ID) {
+    throw new Error(
+      'Missing VITE_ECOMMERCE_STORE_ID in apps/web/.env (restart npm run dev after setting it).',
+    );
+  }
+  return ECOMMERCE_STORE_ID;
+}
 
 export const formatCurrency = (priceInCents, currencyInfo) => {
   if (!currencyInfo || priceInCents === null || priceInCents === undefined) {
@@ -410,7 +422,8 @@ export async function getProducts({
   }
 
   const queryString = queryParams.toString();
-  const url = `${ECOMMERCE_API_URL}/store/${ECOMMERCE_STORE_ID}/products${queryString ? `?${queryString}` : ""}`;
+  const storeId = requireStoreId();
+  const url = `${ECOMMERCE_API_URL}/store/${storeId}/products${queryString ? `?${queryString}` : ""}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -420,7 +433,9 @@ export async function getProducts({
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    throw new Error(
+      `Hostinger Ecommerce HTTP ${response.status} (store ${storeId}). Check VITE_ECOMMERCE_STORE_ID and subscription products.`,
+    );
   }
 
   const data = await response.json();
@@ -487,7 +502,7 @@ export async function getProduct(id, { field } = {}) {
   }
 
   const queryString = queryParams.toString();
-  const url = `${ECOMMERCE_API_URL}/store/${ECOMMERCE_STORE_ID}/products/${id}${queryString ? `?${queryString}` : ""}`;
+  const url = `${ECOMMERCE_API_URL}/store/${requireStoreId()}/products/${id}${queryString ? `?${queryString}` : ""}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -565,7 +580,7 @@ export async function getProductQuantities({ fields, product_ids }) {
     queryParams.append("product_ids[]", id);
   });
 
-  const url = `${ECOMMERCE_API_URL}/store/${ECOMMERCE_STORE_ID}/variants?${queryParams.toString()}`;
+  const url = `${ECOMMERCE_API_URL}/store/${requireStoreId()}/variants?${queryParams.toString()}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -604,7 +619,7 @@ export async function getProductQuantities({ fields, product_ids }) {
  * // Use categories to filter products by checking product.collections[].collection_id
  */
 export async function getCategories() {
-  const url = `${ECOMMERCE_API_URL}/store/${ECOMMERCE_STORE_ID}/collections`;
+  const url = `${ECOMMERCE_API_URL}/store/${requireStoreId()}/collections`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -636,7 +651,7 @@ export async function getCategories() {
 
 async function getCheckoutLanguage() {
   const response = await fetch(
-    `${ECOMMERCE_API_URL}/store/${ECOMMERCE_STORE_ID}/settings`,
+    `${ECOMMERCE_API_URL}/store/${requireStoreId()}/settings`,
     {
       method: "GET",
       headers: {
@@ -703,7 +718,7 @@ export async function initializeCheckout({
   locale,
   customer,
 }) {
-  const url = `${ECOMMERCE_API_URL}/store/${ECOMMERCE_STORE_ID}/checkout`;
+  const url = `${ECOMMERCE_API_URL}/store/${requireStoreId()}/checkout`;
 
   const checkoutInitPromise = fetch(url, {
     method: "POST",

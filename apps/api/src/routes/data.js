@@ -1,6 +1,6 @@
 import express from 'express';
 import authMiddleware, { optionalAuth } from '../middleware/auth.js';
-import { upload } from '../utils/uploads.js';
+import { upload, persistMulterFiles } from '../utils/uploads.js';
 import {
   createRecord,
   deleteRecord,
@@ -76,6 +76,7 @@ router.post(
 
     // Map uploaded files onto PB-style field names
     if (req.files?.length) {
+      await persistMulterFiles(req.files);
       for (const f of req.files) {
         const field = f.fieldname || 'file';
         body[field] = f.filename;
@@ -121,6 +122,7 @@ router.patch('/:collection/:id', authMiddleware, upload.any(), async (req, res) 
 
   const body = { ...req.body };
   if (req.files?.length) {
+    await persistMulterFiles(req.files);
     for (const f of req.files) {
       body[f.fieldname || 'file'] = f.filename;
     }

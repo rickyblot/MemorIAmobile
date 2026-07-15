@@ -120,6 +120,32 @@ router.patch('/me', authMiddleware, async (req, res) => {
   res.json({ user: publicUser(user) });
 });
 
+router.post('/change-password', authMiddleware, async (req, res) => {
+  const { currentPassword, newPassword, newPasswordConfirm } = req.body || {};
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Current and new password are required' });
+  }
+  if (String(newPassword).length < 8) {
+    return res.status(400).json({ error: 'New password must be at least 8 characters' });
+  }
+  if (newPasswordConfirm !== undefined && newPassword !== newPasswordConfirm) {
+    return res.status(400).json({ error: 'Password confirmation does not match' });
+  }
+
+  const user = await findUserById(req.user.id);
+  if (!user?.password_hash) {
+    return res.status(400).json({
+      error: 'This account uses social login only. Set a password via password reset if available.',
+    });
+  }
+  if (!(await verifyPassword(user, currentPassword))) {
+    return res.status(401).json({ error: 'Current password is incorrect' });
+  }
+
+  await updateUser(user.id, { password: newPassword });
+  res.json({ success: true });
+});
+
 router.post('/logout', (_req, res) => {
   res.json({ success: true });
 });

@@ -1,141 +1,251 @@
-import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
-import { User, Mail, Lock, Save, Loader2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { User, Mail, Lock, Save, Loader2, ArrowLeft } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Header from '@/components/Header.jsx';
 import Footer from '@/components/Footer.jsx';
-import { useToast } from '@/hooks/use-toast';
-import pb from '@/lib/pocketbaseClient';
-import { useLanguage } from '@/contexts/LanguageContext.jsx';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext.jsx';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle.js';
+import { apiFetch, setAuthSession, getStoredToken } from '@/lib/apiServerClient';
 
-const ProfilePage = () => {
+export default function ProfilePage() {
+  const { currentUser, setCurrentUser } = useAuth();
+  useDocumentTitle('Perfil - MemorIAmobile');
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
-  const { t } = useLanguage();
-  const navigate = useNavigate();
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [savingPassword, setSavingPassword] = useState(false);
 
   useEffect(() => {
-    const user = pb.authStore.model;
-    if (user) {
-      setName(user.name || '');
-      setEmail(user.email || '');
-    }
-  }, []);
+    setName(currentUser?.name || '');
+    setEmail(currentUser?.email || '');
+  }, [currentUser]);
 
-  const handleSave = async (e) => {
+  const handleSaveProfile = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
+    setSavingProfile(true);
     try {
-      const userId = pb.authStore.model?.id;
-      if (!userId) throw new Error('User not authenticated');
-
-      await pb.collection('users').update(userId, {
-        name,
-      }, { $autoCancel: false });
-
-      toast({
-        title: t('profile.profileUpdated') || 'Profile Updated',
-        description: t('profile.profileDesc') || 'Your profile information has been saved successfully.',
+      const data = await apiFetch('/auth/me', {
+        method: 'PATCH',
+        body: { name: name.trim() },
       });
+      const token = getStoredToken();
+      if (token && data.user) {
+        setAuthSession(token, data.user);
+        setCurrentUser(data.user);
+      }
+      toast.success('Perfil actualizado');
     } catch (error) {
-      console.error('Profile update error:', error);
-      toast({
-        title: t('profile.updateFailed') || 'Update Failed',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'No se pudo guardar el perfil');
     } finally {
-      setLoading(false);
+      setSavingProfile(false);
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (newPassword.length < 8) {
+      toast.error('La nueva contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('La confirmación no coincide');
+      return;
+    }
+
+    setSavingPassword(true);
+    try {
+      await apiFetch('/auth/change-password', {
+        method: 'POST',
+        body: {
+          currentPassword,
+          newPassword,
+          newPasswordConfirm: confirmPassword,
+        },
+      });
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      toast.success('Contraseña actualizada');
+    } catch (error) {
+      toast.error(error.message || 'No se pudo cambiar la contraseña');
+    } finally {
+      setSavingPassword(false);
     }
   };
 
   return (
-    <>
-      <Helmet>
-        <title>{t('profile.pageTitle') || 'Profile Settings'}</title>
-        <meta name="description" content={t('profile.subtitle') || 'Manage your account'} />
-      </Helmet>
-
+    <div className="min-h-screen bg-background flex flex-col">
       <Header />
 
-      <main className="min-h-[calc(100vh-4rem)] bg-background py-12">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <header className="mb-12">
-            <div className="flex items-center gap-3 mb-4">
-              <User className="w-10 h-10 text-primary" />
-              <h1 className="text-4xl md:text-5xl font-extrabold text-foreground font-sans tracking-tight" style={{ letterSpacing: '-0.02em' }}>
-                {t('profile.title') || 'Profile Settings'}
+      <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto">
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground mb-8 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver al dashboard
+          </Link>
+
+          <header className="mb-10">
+            <div className="flex items-center gap-3 mb-3">
+              <User className="w-9 h-9 text-primary" />
+              <h1 className="text-3xl md:text-4xl font-extrabold text-primary font-heading tracking-tight">
+                Ajustes de perfil
               </h1>
             </div>
-            <p className="text-xl text-muted-foreground leading-relaxed">
-              {t('profile.subtitle') || 'Manage your account details and preferences.'}
+            <p className="text-muted-foreground text-lg">
+              Gestiona tu nombre y la seguridad de tu cuenta.
             </p>
           </header>
 
           <div className="space-y-6">
-            <form onSubmit={handleSave} className="bg-card border border-border rounded-2xl p-8 space-y-6 shadow-sm">
+            <form
+              onSubmit={handleSaveProfile}
+              className="bg-card border border-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm"
+            >
+              <h2 className="text-lg font-bold text-foreground">Información personal</h2>
+
               <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-semibold text-card-foreground flex items-center gap-2">
+                <label htmlFor="profile-name" className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <User className="w-4 h-4 text-primary" />
-                  {t('profile.fullName') || 'Full Name'}
+                  Nombre completo
                 </label>
                 <Input
-                  id="name"
+                  id="profile-name"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder={t('profile.fullName') || 'Full Name'}
-                  className="text-foreground h-12"
-                  disabled={loading}
+                  placeholder="Tu nombre"
+                  className="h-12"
+                  disabled={savingProfile}
+                  required
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-semibold text-card-foreground flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-secondary" />
-                  {t('profile.emailAddress') || 'Email Address'}
+                <label htmlFor="profile-email" className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-primary" />
+                  Correo electrónico
                 </label>
                 <Input
-                  id="email"
+                  id="profile-email"
                   type="email"
                   value={email}
                   disabled
-                  className="text-foreground opacity-60 h-12"
+                  className="h-12 opacity-70"
                 />
-                <p className="text-xs text-muted-foreground">{t('profile.emailCannotChange') || 'Email address cannot be changed.'}</p>
+                <p className="text-xs text-muted-foreground">
+                  El correo no se puede cambiar desde aquí.
+                </p>
               </div>
 
-              <Button type="submit" disabled={loading} className="w-full font-bold h-12 text-base">
-                {loading ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> {t('profile.saving') || 'Saving...'}</> : <><Save className="w-5 h-5 mr-2" /> {t('profile.saveChanges') || 'Save Changes'}</>}
+              <Button type="submit" disabled={savingProfile} className="w-full h-12 font-bold">
+                {savingProfile ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Guardando…
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-5 h-5 mr-2" />
+                    Guardar cambios
+                  </>
+                )}
               </Button>
             </form>
 
-            <div className="bg-card border border-border rounded-2xl p-8 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                <div className="flex items-center gap-3">
-                  <Lock className="w-6 h-6 text-accent" />
-                  <h3 className="font-bold text-xl text-card-foreground font-sans">{t('profile.password') || 'Password'}</h3>
-                </div>
-                <Button type="button" onClick={() => navigate('/reset-password')} variant="outline" className="font-semibold h-11">
-                  Change Password
-                </Button>
+            <form
+              onSubmit={handleChangePassword}
+              className="bg-card border border-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm"
+            >
+              <div className="flex items-center gap-3">
+                <Lock className="w-6 h-6 text-accent" />
+                <h2 className="text-lg font-bold text-foreground">Cambiar contraseña</h2>
               </div>
-              <p className="text-muted-foreground">
-                {t('profile.changePasswordInfo') || 'Update your password to keep your account secure.'}
+
+              <div className="space-y-2">
+                <label htmlFor="current-password" className="text-sm font-semibold">
+                  Contraseña actual
+                </label>
+                <Input
+                  id="current-password"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="h-12"
+                  disabled={savingPassword}
+                  required
+                  autoComplete="current-password"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="new-password" className="text-sm font-semibold">
+                  Nueva contraseña
+                </label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="h-12"
+                  disabled={savingPassword}
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="confirm-password" className="text-sm font-semibold">
+                  Confirmar nueva contraseña
+                </label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="h-12"
+                  disabled={savingPassword}
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                />
+              </div>
+
+              <Button type="submit" variant="outline" disabled={savingPassword} className="w-full h-12 font-bold">
+                {savingPassword ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Actualizando…
+                  </>
+                ) : (
+                  'Actualizar contraseña'
+                )}
+              </Button>
+
+              <p className="text-xs text-muted-foreground">
+                ¿Olvidaste tu contraseña? Usa{' '}
+                <Link to="/login" className="text-primary underline-offset-2 hover:underline">
+                  recuperación desde el login
+                </Link>
+                .
               </p>
-            </div>
+            </form>
           </div>
         </div>
       </main>
 
       <Footer />
-    </>
+    </div>
   );
-};
-
-export default ProfilePage;
+}

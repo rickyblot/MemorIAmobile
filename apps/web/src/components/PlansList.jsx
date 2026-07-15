@@ -1,18 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, ShoppingCart } from 'lucide-react';
-import { toast } from 'sonner';
+import { Check } from 'lucide-react';
 import { useSubscriptionAuth } from '@/contexts/SubscriptionAuthContext.jsx';
 import { useEcommerceSubscriptionsPlans } from '@/hooks/useEcommerceSubscriptionsPlans';
 import { useLanguage } from '@/contexts/LanguageContext.jsx';
-import { useCart } from '@/hooks/useCart.jsx';
 import SubscribeButton from './SubscribeButton.jsx';
 import ManageSubscriptionButton from './ManageSubscriptionButton.jsx';
 import { Button } from '@/components/ui/button';
 import { LOGIN_PATH } from '@/config/subscriptionRoutes.js';
-
-const PLAN_PLACEHOLDER_IMAGE =
-	'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRjNGNEY2Ii8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzlDQTNBRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBsYW48L3RleHQ+Cjwvc3ZnPgo=';
 
 export default function PlansList({ className }) {
 	const { plans, loading, error } = useEcommerceSubscriptionsPlans();
@@ -31,7 +26,11 @@ export default function PlansList({ className }) {
 	}
 
 	if (error) {
-		return <p className="text-destructive font-medium text-center">{t('common.error')}</p>;
+		return (
+			<p className="text-destructive font-medium text-center max-w-xl mx-auto">
+				{error.message || t('common.error')}
+			</p>
+		);
 	}
 
 	const freeTier = {
@@ -171,6 +170,13 @@ export default function PlansList({ className }) {
 				</div>
 
 				{/* PAID TIERS */}
+				{paidTiersDisplay.length === 0 ? (
+					<div className="md:col-span-2 lg:col-span-3 flex items-center justify-center rounded-3xl border border-dashed border-border bg-muted/30 p-8 text-center">
+						<p className="text-sm text-muted-foreground max-w-md">
+							No hay planes de pago cargados. Verifica productos <strong>subscription</strong> en Hostinger Ecommerce y <code className="text-xs">VITE_ECOMMERCE_STORE_ID</code>.
+						</p>
+					</div>
+				) : null}
 				{paidTiersDisplay.map((plan) => (
 					<PaidPlanCard 
 						key={plan.id} 
@@ -187,51 +193,10 @@ export default function PlansList({ className }) {
 }
 
 function PaidPlanCard({ plan, subscriptions, hasAnyActiveSub, isAnnual, t }) {
-	const { addToCart } = useCart();
-	const [adding, setAdding] = useState(false);
-
 	const isCurrentPlan = subscriptions.some(
 		(subscription) => subscription && subscription.product_id === plan.id && (subscription.status === 'active' || subscription.status === 'trialing'),
 	);
 	const isLocked = hasAnyActiveSub && !isCurrentPlan;
-
-	const handleAddToCart = async () => {
-		const variant = plan.activeVariant;
-		if (!variant) {
-			toast.error('Plan no disponible', {
-				description: 'Este plan no tiene una variante activa para añadir al carrito.',
-			});
-			return;
-		}
-
-		const product = {
-			id: plan.id,
-			title: plan.title,
-			name: plan.title,
-			image: plan.image || variant.image_url || PLAN_PLACEHOLDER_IMAGE,
-			description: plan.description || '',
-		};
-
-		setAdding(true);
-		try {
-			await addToCart(product, variant, 1, variant.inventory_quantity ?? 999);
-			toast.success('Añadido al carrito', {
-				description: `${plan.title} se añadió correctamente.`,
-				action: {
-					label: 'Ver carrito',
-					onClick: () => {
-						window.location.href = '/cart';
-					},
-				},
-			});
-		} catch (error) {
-			toast.error('No se pudo añadir', {
-				description: error?.message || 'Inténtalo de nuevo.',
-			});
-		} finally {
-			setAdding(false);
-		}
-	};
 
 	return (
 		<div className={`rounded-3xl border p-8 flex flex-col relative transition-all duration-300 shadow-sm hover:shadow-md ${plan.themeBg} ${plan.highlight ? 'ring-2 ring-primary border-transparent scale-[1.02] shadow-lg z-10' : 'border-border'}`}>
@@ -296,23 +261,11 @@ function PaidPlanCard({ plan, subscriptions, hasAnyActiveSub, isAnnual, t }) {
 							<ManageSubscriptionButton className="w-full rounded-xl border border-border px-4 py-3 font-bold font-sans h-12" />
 						</div>
 					) : (
-						<>
-							<SubscribeButton 
-								plan={plan} 
-								variant={plan.activeVariant} 
-								label={`${t('plansPage.list.choose')} ${plan.title}`}
-							/>
-							<Button
-								type="button"
-								variant="secondary"
-								disabled={adding}
-								onClick={handleAddToCart}
-								className="w-full h-12 font-bold font-sans rounded-xl"
-							>
-								<ShoppingCart className="w-4 h-4" />
-								{adding ? 'Añadiendo...' : 'Add to Cart'}
-							</Button>
-						</>
+						<SubscribeButton
+							plan={plan}
+							variant={plan.activeVariant}
+							label={`${t('plansPage.list.choose')} ${plan.title}`}
+						/>
 					)
 				)}
 			</div>
