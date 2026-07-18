@@ -40,7 +40,7 @@ export default function HomePage() {
       <main>
         <section
           className="relative min-h-dvh overflow-hidden bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/memoria-hero.png')" }}
+          style={{ backgroundImage: "url('/memoria-hero.jpg')" }}
         >
           <HeroAmbientEffects />
           <div className="relative z-10 mx-auto flex min-h-dvh max-w-7xl items-center px-6 pb-16 pt-28 sm:px-8 lg:px-12">
@@ -68,8 +68,22 @@ export default function HomePage() {
                   onClick={() => setIsVideoModalOpen(true)}
                   className="clockwise-logo-border w-full rounded-full px-7 py-6 text-base text-primary sm:w-auto"
                 >
-                  <Play className="h-4 w-4 fill-current" /> Ver cómo funciona <LogoHoverBorder />
+                  <Play
+                    className="h-4 w-4"
+                    fill="url(#logo-play-gradient)"
+                    stroke="url(#logo-play-gradient)"
+                  />{' '}
+                  Ver cómo funciona <LogoHoverBorder />
                 </Button>
+                <svg width="0" height="0" aria-hidden="true" className="absolute">
+                  <defs>
+                    <linearGradient id="logo-play-gradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#b735ec" />
+                      <stop offset="48%" stopColor="#7652f4" />
+                      <stop offset="100%" stopColor="#27a9f6" />
+                    </linearGradient>
+                  </defs>
+                </svg>
               </div>
 
               <p className="mt-8 flex items-center gap-2 text-sm text-foreground/55">
@@ -140,7 +154,7 @@ export default function HomePage() {
 
             <motion.div {...reveal} className="lg:col-span-7">
               <div className="rounded-[2rem] border border-primary/10 bg-card p-3 shadow-2xl shadow-primary/15 sm:p-6">
-                <img src="/memoria-hero.png" alt="Vista de la línea de tiempo de MemorIAmobile" className="w-full rounded-2xl" />
+                <img src="/memoria-hero.jpg" alt="Vista de la línea de tiempo de MemorIAmobile" className="w-full rounded-2xl" loading="lazy" decoding="async" />
               </div>
             </motion.div>
           </div>

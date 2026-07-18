@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext.jsx';
 import { SubscriptionAuthProvider } from '@/contexts/SubscriptionAuthContext.jsx';
@@ -9,24 +9,29 @@ import ProtectedRoute from '@/components/ProtectedRoute.jsx';
 import { LOGIN_PATH, PLANS_PATH, MANAGE_PATH } from '@/config/subscriptionRoutes.js';
 
 import HomePage from './pages/HomePage.jsx';
-import LoginPage from './pages/LoginPage.jsx';
-import SignupPage from './pages/SignupPage.jsx';
-import DashboardPage from './pages/DashboardPage.jsx';
-import SmartAlbumPage from './pages/SmartAlbumPage.jsx';
-import PlansPage from './pages/PlansPage.jsx';
-import FAQPage from './pages/FAQPage.jsx';
-import PrivacyPage from './pages/PrivacyPage.jsx';
-import TermsPage from './pages/TermsPage.jsx';
-import ContactPage from './pages/ContactPage.jsx';
-import SubscriptionsPage from './pages/SubscriptionsPage.jsx';
-import ProfilePage from './pages/ProfilePage.jsx';
-import BlogList from './pages/admin/BlogList.jsx';
-import BlogCreate from './pages/admin/BlogCreate.jsx';
-import BlogEdit from './pages/admin/BlogEdit.jsx';
-import BlogIndex from './pages/blog/BlogIndex.jsx';
-import BlogDetail from './pages/blog/BlogDetail.jsx';
+
+const LoginPage = lazy(() => import('./pages/LoginPage.jsx'));
+const SignupPage = lazy(() => import('./pages/SignupPage.jsx'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage.jsx'));
+const SmartAlbumPage = lazy(() => import('./pages/SmartAlbumPage.jsx'));
+const PlansPage = lazy(() => import('./pages/PlansPage.jsx'));
+const FAQPage = lazy(() => import('./pages/FAQPage.jsx'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage.jsx'));
+const TermsPage = lazy(() => import('./pages/TermsPage.jsx'));
+const ContactPage = lazy(() => import('./pages/ContactPage.jsx'));
+const SubscriptionsPage = lazy(() => import('./pages/SubscriptionsPage.jsx'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage.jsx'));
+const BlogList = lazy(() => import('./pages/admin/BlogList.jsx'));
+const BlogCreate = lazy(() => import('./pages/admin/BlogCreate.jsx'));
+const BlogEdit = lazy(() => import('./pages/admin/BlogEdit.jsx'));
+const BlogIndex = lazy(() => import('./pages/blog/BlogIndex.jsx'));
+const BlogDetail = lazy(() => import('./pages/blog/BlogDetail.jsx'));
 
 import { Toaster } from 'sonner';
+
+function RouteFallback() {
+  return <div className="min-h-screen bg-background" aria-busy="true" />;
+}
 
 function App() {
   return (
@@ -35,6 +40,7 @@ function App() {
         <DeviceDetectionProvider>
           <LanguageProvider>
             <Router>
+              <Suspense fallback={<RouteFallback />}>
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<HomePage />} />
@@ -70,6 +76,7 @@ function App() {
                   </div>
                 } />
               </Routes>
+              </Suspense>
               <Toaster position="bottom-center" theme="light" />
             </Router>
           </LanguageProvider>
