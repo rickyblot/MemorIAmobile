@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Brain, ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import SocialAuthButtons from '@/components/SocialAuthButtons.jsx';
+import LogoComponent from '@/components/LogoComponent.jsx';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle.js';
 import { toast } from 'sonner';
@@ -68,12 +69,11 @@ export default function LoginPage() {
     <div className="min-h-screen bg-secondary flex flex-col justify-center py-12 sm:px-6 lg:px-8">
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Link to="/" className="flex justify-center items-center gap-2 mb-8">
-          <Brain className="w-10 h-10 text-primary" />
-          <span className="font-heading font-bold text-3xl text-primary tracking-tight">MemorIA<span className="font-medium text-muted-foreground">mobile</span></span>
+        <Link to="/" className="mb-8 flex justify-center" aria-label="MemorIAmobile — Inicio">
+          <LogoComponent variant="header" className="h-16 max-w-full" />
         </Link>
-        <h2 className="text-center text-3xl font-extrabold text-foreground mb-2">
-          Entra a tu bóveda
+        <h2 className="text-center font-heading text-3xl font-semibold text-foreground mb-2">
+          Bienvenido de nuevo
         </h2>
         <p className="text-center text-sm text-muted-foreground">
           ¿No tienes cuenta?{' '}
@@ -137,7 +137,7 @@ export default function LoginPage() {
 
             <Button 
               type="submit" 
-              className="w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-base font-semibold"
+              className="h-12 w-full rounded-xl border-0 bg-gradient-to-r from-[#b735ec] via-[#7652f4] to-[#27a9f6] text-base font-semibold text-white shadow-lg shadow-[#7652f4]/20 hover:brightness-110"
               disabled={loading || Boolean(oauthLoading)}
             >
               {loading ? (

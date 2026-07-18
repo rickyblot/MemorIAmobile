@@ -101,7 +101,7 @@ export default function EnhancedMemoryCard({
   return (
     <>
       <div 
-        className={`group bg-card rounded-2xl overflow-hidden border transition-all duration-300 flex flex-col h-full relative ${
+        className={`memory-lift group bg-card rounded-2xl overflow-hidden border transition-all duration-300 flex flex-col h-full relative ${
           isSelected ? 'border-primary ring-2 ring-primary/20 shadow-md' : 'border-border shadow-sm hover:shadow-md'
         }`}
       >

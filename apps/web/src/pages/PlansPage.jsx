@@ -15,14 +15,15 @@ export default function PlansPage() {
 
       <Header />
 
-      <main className="flex-1 py-16 px-4 sm:px-6 lg:px-8">
+      <main className="paper-texture flex-1 px-6 py-20 sm:px-8 sm:py-24 lg:px-12">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-primary mb-6 text-balance">
-              Planes transparentes, sin sorpresas
+            <p className="eyebrow mb-5 text-accent">El espacio que tu historia necesita</p>
+            <h1 className="mx-auto mb-6 max-w-4xl text-5xl font-semibold leading-tight text-primary text-balance md:text-6xl">
+              Conserva lo que importa.
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-balance">
-              Protege tus fotos, documentos y mensajes con nuestra bóveda inteligente. Empieza gratis y mejora cuando lo necesites.
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-balance leading-relaxed">
+              Empieza con tus primeros recuerdos y amplía tu espacio cuando tu historia crezca. Sin sorpresas y siempre bajo tu control.
             </p>
           </div>
           

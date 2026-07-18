@@ -1,19 +1,22 @@
-import React, { useState, useRef } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import { UploadCloud, File, Image as ImageIcon, Video, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import pb from '@/lib/pocketbaseClient.js';
 import { toast } from 'sonner';
+import MemorySavedAnimation from '@/components/MemorySavedAnimation.jsx';
 
 export default function MemoryUpload({ onUploadComplete }) {
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [savedCount, setSavedCount] = useState(0);
   
   const inputRef = useRef(null);
   const { currentUser } = useAuth();
+  const dismissSavedAnimation = useCallback(() => setSavedCount(0), []);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -82,7 +85,7 @@ export default function MemoryUpload({ onUploadComplete }) {
         successCount++;
         setProgress(((i + 1) / files.length) * 100);
       }
-      toast.success(`Successfully preserved ${successCount} memories!`);
+      setSavedCount(successCount);
       setFiles([]);
       if (onUploadComplete) onUploadComplete();
     } catch (err) {
@@ -95,7 +98,8 @@ export default function MemoryUpload({ onUploadComplete }) {
   };
 
   return (
-    <div className="bg-card rounded-3xl p-6 md:p-8 shadow-sm border border-border">
+    <>
+      <div className="bg-card rounded-3xl p-6 md:p-8 shadow-sm border border-border">
       <div 
         className={`upload-zone ${dragActive ? 'active' : ''}`}
         onDragEnter={handleDrag}
@@ -126,7 +130,7 @@ export default function MemoryUpload({ onUploadComplete }) {
           <h4 className="font-semibold text-foreground font-sans">Ready to preserve ({files.length})</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-60 overflow-y-auto pr-2">
             {files.map((item, idx) => (
-              <div key={idx} className="flex items-center gap-3 bg-muted/50 p-3 rounded-xl border border-border">
+              <div key={idx} className="memory-lift flex items-center gap-3 bg-muted/50 p-3 rounded-xl border border-border">
                 {item.type === 'photo' ? <ImageIcon className="w-8 h-8 text-[hsl(var(--file-image))]" /> : 
                  item.type === 'video' ? <Video className="w-8 h-8 text-[hsl(var(--file-video))]" /> : 
                  <File className="w-8 h-8 text-muted-foreground" />}
@@ -167,6 +171,8 @@ export default function MemoryUpload({ onUploadComplete }) {
           </div>
         </div>
       )}
-    </div>
+      </div>
+      <MemorySavedAnimation count={savedCount} onComplete={dismissSavedAnimation} />
+    </>
   );
 }

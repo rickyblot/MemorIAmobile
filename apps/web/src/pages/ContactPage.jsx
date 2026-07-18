@@ -123,7 +123,7 @@ export default function ContactPage() {
 
               <Button 
                 type="submit" 
-                className="w-full h-14 rounded-xl font-bold bg-primary text-primary-foreground hover:bg-primary/90 text-lg"
+                className="h-14 w-full rounded-xl border-0 bg-gradient-to-r from-[#b735ec] via-[#7652f4] to-[#27a9f6] text-lg font-bold text-white shadow-lg shadow-[#7652f4]/20 hover:brightness-110"
                 disabled={loading}
               >
                 {loading ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : 'Enviar mensaje'}

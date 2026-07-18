@@ -90,14 +90,14 @@ export default function PlansList({ className }) {
 	return (
 		<div className="w-full">
 			{polling && (
-				<div className="mb-6 flex items-center gap-3 rounded-2xl border border-border bg-background p-4 mx-auto max-w-md justify-center shadow-subtle">
+				<div className="mb-6 flex items-center gap-3 rounded-2xl border border-border bg-background p-4 mx-auto max-w-md justify-center shadow-sm">
 					<div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
 					<p className="text-sm font-bold font-sans text-foreground">{t('subs.updating')}</p>
 				</div>
 			)}
 
-			<div className="flex justify-center items-center mb-12">
-				<div className="bg-muted p-1.5 rounded-full inline-flex relative shadow-inner">
+			<div className="flex justify-center items-center mb-14">
+				<div className="bg-secondary p-1.5 rounded-full inline-flex relative border border-border">
 					<button
 						onClick={() => setIsAnnual(false)}
 						className={`relative z-10 px-6 py-2.5 rounded-full text-sm font-bold font-sans transition-colors duration-200 ${
@@ -113,7 +113,7 @@ export default function PlansList({ className }) {
 						}`}
 					>
 						{t('plansPage.list.yearly')}
-						<span className="bg-primary/10 text-primary text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">{t('plansPage.list.save')}</span>
+						<span className="bg-accent/25 text-primary text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">{t('plansPage.list.save')}</span>
 					</button>
 					
 					{/* Sliding active pill */}
@@ -126,13 +126,14 @@ export default function PlansList({ className }) {
 
 			<div className={className ?? 'grid gap-6 md:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto'}>
 				{/* FREE TIER CARD */}
-				<div className={`rounded-3xl border border-border bg-card p-8 flex flex-col relative overflow-hidden shadow-sm hover:shadow-md transition-shadow`}>
+				<div className="relative flex flex-col overflow-hidden rounded-2xl border border-border border-t-4 border-t-accent bg-card p-8 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
 					<div className="mb-6">
-						<h3 className="text-xl font-bold mb-2 text-foreground font-sans">{freeTier.title}</h3>
+						<p className="eyebrow mb-3 text-accent">Para comenzar</p>
+						<h3 className="text-3xl font-semibold mb-2 text-primary">{freeTier.title}</h3>
 						<p className="text-muted-foreground text-sm min-h-[40px] leading-relaxed">{freeTier.description}</p>
 					</div>
 					
-					<p className="text-4xl font-extrabold mb-8 text-foreground font-sans tracking-tight">
+					<p className="text-4xl font-bold mb-8 text-primary font-sans tracking-tight">
 						{freeTier.price}
 						<span className="text-base font-medium text-muted-foreground ml-1">{t('common.monthShort')}</span>
 					</p>
@@ -158,7 +159,7 @@ export default function PlansList({ className }) {
 								</div>
 							) : (
 								<Button asChild variant="outline" className="w-full h-12 font-bold font-sans">
-									<Link to="/features">{t('plansPage.list.viewFeatures')}</Link>
+									<Link to="/dashboard">{t('plansPage.list.viewFeatures')}</Link>
 								</Button>
 							)
 						) : (
@@ -171,10 +172,14 @@ export default function PlansList({ className }) {
 
 				{/* PAID TIERS */}
 				{paidTiersDisplay.length === 0 ? (
-					<div className="md:col-span-2 lg:col-span-3 flex items-center justify-center rounded-3xl border border-dashed border-border bg-muted/30 p-8 text-center">
-						<p className="text-sm text-muted-foreground max-w-md">
-							No hay planes de pago cargados. Verifica productos <strong>subscription</strong> en Hostinger Ecommerce y <code className="text-xs">VITE_ECOMMERCE_STORE_ID</code>.
-						</p>
+					<div className="md:col-span-2 lg:col-span-3 flex min-h-80 items-center justify-center rounded-2xl border border-dashed border-accent/60 bg-card/60 p-8 text-center">
+						<div className="max-w-md">
+							<p className="eyebrow mb-4 text-accent">Próximamente</p>
+							<h3 className="mb-3 text-3xl font-medium text-primary">Más espacio para historias que crecen.</h3>
+							<p className="text-sm leading-relaxed text-muted-foreground">
+								Estamos preparando nuestros planes de memoria. Mientras tanto, puedes comenzar a conservar tus primeros recuerdos.
+							</p>
+						</div>
 					</div>
 				) : null}
 				{paidTiersDisplay.map((plan) => (
@@ -199,10 +204,10 @@ function PaidPlanCard({ plan, subscriptions, hasAnyActiveSub, isAnnual, t }) {
 	const isLocked = hasAnyActiveSub && !isCurrentPlan;
 
 	return (
-		<div className={`rounded-3xl border p-8 flex flex-col relative transition-all duration-300 shadow-sm hover:shadow-md ${plan.themeBg} ${plan.highlight ? 'ring-2 ring-primary border-transparent scale-[1.02] shadow-lg z-10' : 'border-border'}`}>
+		<div className={`relative flex flex-col rounded-2xl border border-t-4 p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${plan.themeBg} ${plan.highlight ? 'border-primary bg-primary text-primary-foreground shadow-xl z-10' : 'border-border border-t-accent shadow-sm'}`}>
 			{plan.highlight && (
 				<div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-					<span className={`bg-primary text-primary-foreground text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm font-sans`}>
+					<span className="bg-accent text-accent-foreground text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm font-sans">
 						{plan.highlight}
 					</span>
 				</div>
@@ -210,27 +215,27 @@ function PaidPlanCard({ plan, subscriptions, hasAnyActiveSub, isAnnual, t }) {
 			
 			<div className="mb-6 mt-2">
 				<div className="flex justify-between items-start mb-2">
-					<h3 className={`text-xl font-bold font-sans ${plan.accentColor}`}>{plan.title}</h3>
+					<h3 className={`text-3xl font-semibold ${plan.highlight ? 'text-primary-foreground' : plan.accentColor}`}>{plan.title}</h3>
 					{isCurrentPlan && (
 						<span className="inline-flex items-center rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-bold uppercase tracking-wider font-sans">
 							{t('plansPage.list.currentPlan')}
 						</span>
 					)}
 				</div>
-				<p className="text-muted-foreground text-sm min-h-[40px] leading-relaxed">{plan.description}</p>
+				<p className={`text-sm min-h-[40px] leading-relaxed ${plan.highlight ? 'text-primary-foreground/65' : 'text-muted-foreground'}`}>{plan.description}</p>
 			</div>
 
 			<div className="mb-8">
-				<p className="text-4xl font-extrabold text-foreground flex items-end gap-1 font-sans tracking-tight">
+				<p className={`text-4xl font-bold flex items-end gap-1 font-sans tracking-tight ${plan.highlight ? 'text-primary-foreground' : 'text-foreground'}`}>
 					{plan.activeVariant?.sale_price_in_cents != null
 						? plan.activeVariant.sale_price_formatted
 						: plan.activeVariant?.price_formatted || '—'}
-					<span className="text-base font-medium text-muted-foreground mb-1 ml-1">
+					<span className={`text-base font-medium mb-1 ml-1 ${plan.highlight ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
 						{t('common.monthShort')}
 					</span>
 				</p>
 				{isAnnual && plan.savings ? (
-					<p className="text-sm font-bold font-sans text-secondary mt-3 bg-secondary/10 inline-block px-3 py-1 rounded-lg">
+					<p className={`text-sm font-bold font-sans mt-3 inline-block px-3 py-1 rounded-lg ${plan.highlight ? 'bg-white/10 text-accent' : 'bg-accent/15 text-primary'}`}>
 						{plan.savings}
 					</p>
 				) : (
@@ -242,10 +247,10 @@ function PaidPlanCard({ plan, subscriptions, hasAnyActiveSub, isAnnual, t }) {
 				<ul className="space-y-4">
 					{plan.features.map((feat, i) => (
 						<li key={i} className="flex items-start gap-3">
-							<div className={`mt-0.5 rounded-full p-1 ${plan.highlight ? 'bg-primary/10' : 'bg-muted'}`}>
-								<Check className={`w-3.5 h-3.5 shrink-0 ${plan.highlight ? 'text-primary' : 'text-foreground'}`} />
+							<div className={`mt-0.5 rounded-full p-1 ${plan.highlight ? 'bg-white/10' : 'bg-muted'}`}>
+								<Check className={`w-3.5 h-3.5 shrink-0 ${plan.highlight ? 'text-accent' : 'text-foreground'}`} />
 							</div>
-							<span className="text-sm font-medium text-foreground">{feat}</span>
+							<span className={`text-sm font-medium ${plan.highlight ? 'text-primary-foreground/85' : 'text-foreground'}`}>{feat}</span>
 						</li>
 					))}
 				</ul>
