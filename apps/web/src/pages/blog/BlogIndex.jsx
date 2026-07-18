@@ -16,7 +16,7 @@ export default function BlogIndex() {
   return (
     <div className="min-h-screen bg-secondary/50 flex flex-col">
       <Helmet>
-        <title>Blog / Noticias - MemorIAmobile</title>
+        <title>Blog / Stories - MemorIAmobile</title>
         <meta
           name="description"
           content="Novedades, guías y actualizaciones de MemorIAmobile."
@@ -36,7 +36,7 @@ export default function BlogIndex() {
               <Newspaper className="w-7 h-7" />
             </div>
             <h1 className="text-4xl sm:text-5xl font-extrabold text-primary font-heading tracking-tight mb-4">
-              Blog / Noticias
+              Blog / Stories
             </h1>
             <p className="text-lg text-muted-foreground">
               Actualizaciones, consejos y novedades de la plataforma.
