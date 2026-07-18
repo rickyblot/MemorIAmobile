@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import LogoComponent from '@/components/LogoComponent.jsx';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const isHome = location.pathname === '/';
@@ -24,10 +25,24 @@ export default function Header() {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
+  useEffect(() => {
+    const onScroll = () => {
+      setIsScrolled(window.scrollY > 12);
+    };
+
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
     <>
-    <header className="fixed top-0 z-50 w-full border-b border-transparent bg-transparent">
-      <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-12">
+    <header
+      className={`fixed top-0 z-50 w-full border-transparent ${
+        isScrolled ? 'header-scrolled' : ''
+      }`}
+    >
+      <div className="relative z-10 mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-12">
         <Link
           to="/"
           aria-label="MemorIAmobile — Inicio"
