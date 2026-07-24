@@ -143,7 +143,16 @@ const client = {
     getURL(record, filename) {
       if (!filename && record?.file) filename = record.file;
       if (!filename) return '';
-      if (typeof filename === 'string' && (filename.startsWith('http') || filename.startsWith('/'))) {
+      if (typeof filename === 'string' && filename.startsWith('http')) {
+        return filename;
+      }
+      if (typeof filename === 'string' && filename.startsWith('/hcgi/api/')) {
+        return filename;
+      }
+      if (typeof filename === 'string' && filename.startsWith('/uploads/')) {
+        return `${API_SERVER_URL}${filename}`;
+      }
+      if (typeof filename === 'string' && filename.startsWith('/')) {
         return filename;
       }
       // Prefer same-origin API uploads proxy

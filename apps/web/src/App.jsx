@@ -14,6 +14,7 @@ const LoginPage = lazy(() => import('./pages/LoginPage.jsx'));
 const SignupPage = lazy(() => import('./pages/SignupPage.jsx'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage.jsx'));
 const SmartAlbumPage = lazy(() => import('./pages/SmartAlbumPage.jsx'));
+const MemoriesPage = lazy(() => import('./pages/MemoriesPage.jsx'));
 const PlansPage = lazy(() => import('./pages/PlansPage.jsx'));
 const FAQPage = lazy(() => import('./pages/FAQPage.jsx'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage.jsx'));
@@ -61,6 +62,7 @@ function App() {
                 {/* Protected Routes */}
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
                 <Route path="/dashboard/albums/:albumType" element={<ProtectedRoute><SmartAlbumPage /></ProtectedRoute>} />
+                <Route path="/memories" element={<ProtectedRoute><MemoriesPage /></ProtectedRoute>} />
                 <Route path="/admin/blog" element={<ProtectedRoute><BlogList /></ProtectedRoute>} />
                 <Route path="/admin/blog/new" element={<ProtectedRoute><BlogCreate /></ProtectedRoute>} />
                 <Route path="/admin/blog/:id/edit" element={<ProtectedRoute><BlogEdit /></ProtectedRoute>} />
